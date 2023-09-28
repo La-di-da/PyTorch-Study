@@ -3,6 +3,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor
+import os
 
 # Define model
 class NeuralNetwork(nn.Module):
@@ -107,5 +108,6 @@ if __name__ == '__main__':
         test(test_dataloader, model, loss_fn)
     print("Done!")
 
+    os.makedirs('models', exist_ok=True)
     torch.save(model.state_dict(), "models/model.pth")
     print("Saved PyTorch Model State to model.pth")
