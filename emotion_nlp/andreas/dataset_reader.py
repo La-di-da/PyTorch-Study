@@ -15,7 +15,7 @@ class EmotionNLPDataset(Dataset):
         sent = self.sent_labels.iloc[idx, 0]
         label = self.sent_labels.iloc[idx, 1]
         if self.transform:
-            image = self.transform(image)
+            sent = self.transform(sent)
         if self.target_transform:
             label = self.target_transform(label)
-        return image, label
+        return sent, label
