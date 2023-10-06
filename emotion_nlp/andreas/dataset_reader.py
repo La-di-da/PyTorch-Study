@@ -4,7 +4,7 @@ from torchvision.io import read_image
 
 class EmotionNLPDataset(Dataset):
     def __init__(self, annotations_file, transform=None, target_transform=None):
-        self.sent_labels = pd.read_csv(annotations_file, delimiter=';')
+        self.sent_labels = pd.read_csv(annotations_file, delimiter=';', index_col=['sents', 'labels'])
         self.transform = transform
         self.target_transform = target_transform
 
