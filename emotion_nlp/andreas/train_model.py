@@ -1,5 +1,4 @@
 from dataset_reader import EmotionNLPDataset
-from collections import OrderedDict
 from pandas import DataFrame
 import os
 from neural_model import EmotionClassifer
@@ -12,8 +11,7 @@ class Lexicon:
         self.length = len(saved_lexicon)
 
     def build_lexicon(self, data : DataFrame) -> None:
-        column = [data['sents']]
-        for sent in data['sents']:
+        for sent in data.iloc[:,0]:
             for token in sent.split(' '):
                 if token not in self.lexicon:
                     self.lexicon[token] = self.length
@@ -24,21 +22,21 @@ class Lexicon:
     # the vector length has to be consistent. Everything else is free
     def vectorize_sent(self, sent):
         sent_vec = torch.zeros(self.length, dtype=torch.float)
-        for token in sent:
+        for token in sent.split(' '):
             sent_vec[self.lexicon[token]] = 1
 
         return sent_vec
 
 def label_transform(label):
     labels = {
-        "sadness" : 0,
-        "anger" : 1,
-        "love" : 2,
-        "surprise" : 3,
-        "fear" : 4,
-        "joy" : 5
+        "sadness" : [1, 0, 0, 0, 0, 0],
+        "anger" : [0, 1, 0, 0, 0, 0],
+        "love" : [0, 0, 1, 0, 0, 0],
+        "surprise" : [0, 0, 0, 1, 0, 0],
+        "fear" : [0, 0, 0, 0, 1, 0],
+        "joy" : [0, 0, 0, 0, 0, 1]
     }
-    return labels[label]
+    return torch.FloatTensor(labels[label])
 
 lexicon = Lexicon()
 
@@ -59,8 +57,8 @@ val = EmotionNLPDataset('data/emotion_nlp/val.txt',
                           target_transform=target_transform)
 
 lexicon.build_lexicon(train.sent_labels)
-lexicon.build_lexicon(test)
-lexicon.build_lexicon(val)
+lexicon.build_lexicon(test.sent_labels)
+lexicon.build_lexicon(val.sent_labels)
 
 lexicon_path = 'models/emotion_nlp/lexicon.json'
 os.makedirs(os.path.dirname(lexicon_path), exist_ok=True)
@@ -73,7 +71,7 @@ model = EmotionClassifer(lexicon.length).to(device)
 print(model)
 
 # add training here, look in the quickstart
-def train(dataset, model, loss_fn, optimizer):
+def train_model(dataset, model, loss_fn, optimizer):
     size = len(dataset)
     model.train()
     for batch, (X, y) in enumerate(dataset):
@@ -89,26 +87,34 @@ def train(dataset, model, loss_fn, optimizer):
         optimizer.zero_grad()
 
         if batch % 100 == 0:
-            loss, current = loss.item(), (batch + 1) * len(X)
+            loss, current = loss.item(), (batch + 1)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
-""" def test(dataloader, model, loss_fn):
-    size = len(dataloader.dataset)
-    num_batches = len(dataloader)
+def test_model(dataset, model, loss_fn):
+    size = len(dataset)
     model.eval()
     test_loss, correct = 0, 0
     with torch.no_grad():
-        for X, y in dataloader:
+        for X, y in dataset:
             X, y = X.to(device), y.to(device)
             pred = model(X)
             test_loss += loss_fn(pred, y).item()
-            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
-    test_loss /= num_batches
+            correct += (pred.argmax() == y.argmax()).type(torch.float).sum().item()
+    test_loss /= size
     correct /= size
-    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n") """
+    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
 
 loss_fn = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
 
-train(test, model, loss_fn, optimizer)
+epochs = 5
+for t in range(epochs):
+    print(f"Epoch {t+1}\n-------------------------------")
+    train_model(train, model, loss_fn, optimizer)
+    test_model(test, model, loss_fn)
+print("Done!")
+
+os.makedirs('models', exist_ok=True)
+torch.save(model.state_dict(), "models/emotion_nlp/model.pth")
+print("Saved PyTorch Model State to model.pth")

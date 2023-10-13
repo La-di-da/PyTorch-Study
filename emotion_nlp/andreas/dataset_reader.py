@@ -4,12 +4,12 @@ from torchvision.io import read_image
 
 class EmotionNLPDataset(Dataset):
     def __init__(self, annotations_file, transform=None, target_transform=None):
-        self.sent_labels = pd.read_csv(annotations_file, delimiter=';', index_col=['sents', 'labels'])
+        self.sent_labels = pd.read_csv(annotations_file, delimiter=';')
         self.transform = transform
         self.target_transform = target_transform
 
     def __len__(self):
-        return len(self.img_labels)
+        return len(self.sent_labels)
 
     def __getitem__(self, idx):
         sent = self.sent_labels.iloc[idx, 0]
