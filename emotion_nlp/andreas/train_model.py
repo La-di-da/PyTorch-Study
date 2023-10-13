@@ -67,7 +67,7 @@ with open(lexicon_path, mode='w') as file:
 
 device = "cpu"
 print(f"Using {device} device")
-model = EmotionClassifer(lexicon.length).to(device)
+model = EmotionClassifer(lexicon.length, label_size=6).to(device)
 print(model)
 
 # add training here, look in the quickstart
