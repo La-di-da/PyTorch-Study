@@ -2,14 +2,14 @@ from torch import nn
 
 # Define model
 class EmotionClassifer(nn.Module):
-    def __init__(self, lexicon_size, label_size):
+    def __init__(self, lexicon_size, label_size, layer_a = 32, layer_b = 32):
         super().__init__()
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(lexicon_size, 512),
+            nn.Linear(lexicon_size, layer_a),
             nn.ReLU(),
-            nn.Linear(512, 512),
+            nn.Linear(layer_a, layer_b),
             nn.ReLU(),
-            nn.Linear(512, label_size)
+            nn.Linear(layer_b, label_size)
         )
 
     def forward(self, x):

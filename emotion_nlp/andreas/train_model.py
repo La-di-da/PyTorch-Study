@@ -108,7 +108,7 @@ def test_model(dataset, model, loss_fn):
 loss_fn = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
 
-epochs = 5
+epochs = 10
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
     train_model(train, model, loss_fn, optimizer)
