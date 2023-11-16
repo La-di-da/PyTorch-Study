@@ -1,4 +1,5 @@
-from torch.utils.data import ConcatDataset, Dataset
+from torch.utils.data import Dataset
+from torch import Tensor
 import pandas as pd
 import os
 from typing import List
@@ -11,7 +12,7 @@ def element_to_vec(element : pd.DataFrame) -> List[float]:
     return vec
 
 class AslSignData(Dataset):
-    def __init__(self, train_csv, transform=None, target_transform=None, root_path=None):
+    def __init__(self, train_csv, transform=None, target_transform=None, root_path=None, sign_to_pred=None):
         self.parquet_labels = pd.read_csv(train_csv, delimiter=',')
         self.transform = transform
         self.target_transform = target_transform
@@ -45,4 +46,4 @@ class AslSignData(Dataset):
             frame_vecs = self.transform(frame_vecs)
         if self.target_transform:
             label = self.target_transform(label)
-        return frame_vecs, label
+        return Tensor(frame_vecs), label
