@@ -6,10 +6,9 @@ from torch import nn, optim
 
 root = '/Users/ark/projects/PyTorch-Study/PyTorch-Study/data/asl-signs/'
 train_csv = os.path.join(root, 'train.csv')
+sign_mapping = os.path.join(root, 'sign_to_prediction_index_map.json')
 
-dataset = dataset_reader.AslSignData(train_csv, root_path=root)
-
-print(len(dataset))
+dataset = dataset_reader.AslSignData(train_csv, root_path=root, sign_to_pred=sign_mapping)
 
 for parq_vec, label in dataset:
     first_vec = parq_vec
@@ -17,7 +16,7 @@ for parq_vec, label in dataset:
 
 EMBEDDING_DIM = len(parq_vec[0])
 HIDDEN_DIM = 64
-tagset_size = 1
+tagset_size = dataset.tagset_size
 
 model = AslSignModel(EMBEDDING_DIM, HIDDEN_DIM, tagset_size)
 loss_function = nn.NLLLoss()

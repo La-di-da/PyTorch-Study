@@ -1,8 +1,9 @@
 from torch.utils.data import Dataset
-from torch import Tensor
+from torch import Tensor, zeros
 import pandas as pd
 import os
 from typing import List
+import json
 
 def element_to_vec(element : pd.DataFrame) -> List[float]:
     vec = []
@@ -14,9 +15,12 @@ def element_to_vec(element : pd.DataFrame) -> List[float]:
 class AslSignData(Dataset):
     def __init__(self, train_csv, transform=None, target_transform=None, root_path=None, sign_to_pred=None):
         self.parquet_labels = pd.read_csv(train_csv, delimiter=',')
+        with open(sign_to_pred) as file:
+            self.sign_mapping = json.load(file)
         self.transform = transform
         self.target_transform = target_transform
         self.root = root_path
+        self.tagset_size = len(self.sign_mapping)
 
     def __len__(self):
         return len(self.parquet_labels)
@@ -41,9 +45,12 @@ class AslSignData(Dataset):
             joined_vec.extend(element_to_vec(left_hand))
 
             frame_vecs.append(joined_vec)
-        
+
+        label_vec = zeros([len(frame_vecs), self.tagset_size])
+        label_vec[:, self.sign_mapping[label]] = 1
+
         if self.transform:
             frame_vecs = self.transform(frame_vecs)
         if self.target_transform:
-            label = self.target_transform(label)
-        return Tensor(frame_vecs), label
+            label_vec = self.target_transform(label_vec)
+        return Tensor(frame_vecs), label_vec
