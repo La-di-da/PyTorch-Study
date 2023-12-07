@@ -26,8 +26,8 @@ class AslSignData(Dataset):
         return len(self.parquet_labels)
 
     def __getitem__(self, idx):
-        parquet = self.parquet_labels.iloc[idx, 0] # column: path
-        label = self.parquet_labels.iloc[idx, 3] # column: sign
+        parquet = self.parquet_labels.iloc[idx, 1] # column: path
+        label = self.parquet_labels.iloc[idx, 4] # column: sign
 
         contents = pd.read_parquet(os.path.join(self.root, parquet))
         contents = contents.fillna(0) # replace NaN with something that doesn't break the neural network

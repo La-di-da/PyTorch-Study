@@ -5,10 +5,13 @@ from torch.utils.data import DataLoader
 from torch import nn, optim
 
 root = '/Users/ark/projects/PyTorch-Study/PyTorch-Study/data/asl-signs/'
+csv_dir = os.path.join(root, "split-csvs")
 train_csv = os.path.join(root, 'train.csv')
 sign_mapping = os.path.join(root, 'sign_to_prediction_index_map.json')
 
-dataset = dataset_reader.AslSignData(train_csv, root_path=root, sign_to_pred=sign_mapping)
+training_csvs = [os.path.join(csv_dir, file) for file in os.listdir(csv_dir) if file.endswith('.csv')]
+
+dataset = dataset_reader.AslSignData(training_csvs[0], root_path=root, sign_to_pred=sign_mapping)
 
 train_dataloader = DataLoader(dataset, shuffle=True)
 
@@ -39,8 +42,4 @@ for epoch in range(1):  # again, normally you would NOT do 300 epochs, it is toy
         loss.backward()
         optimizer.step()
 
-        break
-
-print(tag_scores.shape)
-print(loss)
-print(len(dataset.parquet_labels))
+        print(loss)
