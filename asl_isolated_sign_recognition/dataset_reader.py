@@ -26,6 +26,7 @@ class AslSignData(Dataset):
         return len(self.parquet_labels)
 
     def __getitem__(self, idx):
+        id = self.parquet_labels.iloc[idx, 0]
         parquet = self.parquet_labels.iloc[idx, 1] # column: path
         label = self.parquet_labels.iloc[idx, 4] # column: sign
 
@@ -53,4 +54,4 @@ class AslSignData(Dataset):
             frame_vecs = self.transform(frame_vecs)
         if self.target_transform:
             label_vec = self.target_transform(label_vec)
-        return Tensor(frame_vecs), label_vec
+        return Tensor(frame_vecs), label_vec, id
